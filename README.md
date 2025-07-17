@@ -4,13 +4,20 @@ A Model Context Protocol (MCP) server that provides access to Oracle WebCenter C
 
 ## Features
 
-This MCP server provides tools and resources for:
+This MCP server provides comprehensive tools and resources for Oracle WebCenter Content, covering the complete REST API v1.1 specification:
 
-- **Document Management**: Search, download, upload, and manage documents
-- **Folder Operations**: Create folders, search within folders, get folder information
-- **Metadata Operations**: Get and update document metadata
-- **Workflow Management**: Checkout/reverse checkout documents, view work in progress
-- **Capabilities**: Check document permissions and capabilities
+- **Document Management**: Search, download, upload, update, delete documents and revisions
+- **Folder Operations**: Create, delete folders, manage files within folders, create file links
+- **Metadata Operations**: Get and update document metadata with versioning support
+- **Workflow Management**: Create, update, approve, reject workflows; checkout/reverse checkout documents
+- **Public & Application Links**: Create and manage public links and application links for files and folders
+- **Background Jobs**: Start and monitor bulk operations (delete, download, category management)
+- **Taxonomies**: Create, update, and manage taxonomies for document categorization
+- **System Operations**: Query data sources, manage document types, get system configuration
+- **Attachments**: Add, download, list, and delete document attachments
+- **Storage Management**: Update storage tiers and restore documents from archive
+- **Capabilities**: Test document and folder permissions and capabilities
+- **Conversion Management**: Resubmit failed document conversions
 
 ## Installation
 
@@ -85,23 +92,97 @@ npm run build:electron:linux
 
 ## MCP Tools
 
-The server provides the following MCP tools:
+The server provides 56 comprehensive MCP tools covering all WebCenter Content operations.
+
+> 📚 **Complete Documentation**: See [ENDPOINTS.md](ENDPOINTS.md) for detailed documentation of all 56 MCP tools with parameters and examples.
 
 ### Document Operations
 
 - **search-documents**: Search for documents in WebCenter Content
 - **get-document-metadata**: Get metadata for a specific document
 - **download-document**: Download a document from WebCenter Content
-- **update-document-metadata**: Update metadata for a document
+- **download-document-by-revision-id**: Download document by specific revision ID
+- **update-document-metadata**: Update metadata for a document (with versioning)
+- **update-document-by-revision-id**: Update document by specific revision ID
+- **delete-document**: Delete a document from WebCenter Content
+- **upload-document-revision**: Upload a new revision of an existing document
 - **checkout-document**: Checkout a document for editing
 - **reverse-checkout**: Reverse checkout (undo checkout) of a document
 - **get-document-capabilities**: Get capabilities/permissions for a document
+- **resubmit-conversion**: Resubmit failed conversion for a document
+- **resubmit-conversion-by-revision-id**: Resubmit failed conversion by revision ID
+
+### Storage Management
+
+- **update-storage-tier**: Change storage tier for a document
+- **update-storage-tier-by-revision-id**: Change storage tier by revision ID
+- **restore-from-archive**: Restore document from archive
+- **restore-from-archive-by-revision-id**: Restore document from archive by revision ID
 
 ### Folder Operations
 
 - **create-folder**: Create a new folder in WebCenter Content
+- **delete-folder**: Delete a folder
 - **get-folder-info**: Get information about a specific folder
+- **get-folder-file-info**: Get file information within a folder
+- **delete-folder-file**: Delete a file within a folder
 - **search-in-folder**: Search for items within a specific folder
+- **create-file-link**: Create a file link within a folder
+- **get-folder-capabilities**: Test folder capabilities and permissions
+
+### Public Links Management
+
+- **create-public-link-for-file**: Create public link for a file
+- **get-public-links-for-file**: List public links for a file
+- **create-public-link-for-folder**: Create public link for a folder
+- **get-public-links-for-folder**: List public links for a folder
+- **get-public-link-info**: Get information about a public link
+
+### Application Links Management
+
+- **create-application-link**: Create application link for a folder
+- **get-application-links-for-folder**: List application links for a folder
+- **get-application-link-info**: Get application link information
+- **delete-application-link**: Delete an application link
+- **refresh-application-link-token**: Refresh application link access token
+
+### Background Jobs
+
+- **start-bulk-delete-job**: Start bulk delete operation
+- **start-bulk-download-job**: Start bulk download operation
+- **start-bulk-add-category-job**: Start bulk add category operation
+- **start-bulk-remove-category-job**: Start bulk remove category operation
+- **cancel-background-job**: Cancel a background job
+- **get-background-job-status**: Get status of a background job
+- **download-background-job-package**: Download results of a background job
+
+### Taxonomies
+
+- **create-taxonomy**: Create a new taxonomy
+- **get-taxonomy**: Get taxonomy information
+- **update-taxonomy**: Update a taxonomy
+
+### System Operations
+
+- **get-document-types**: List all document types
+- **get-document-config-info**: Get system configuration information
+- **get-document-meta-info**: Get metadata fields information
+- **query-data-source**: Query system data sources
+
+### Workflow Management
+
+- **create-workflow**: Create a new workflow
+- **get-workflow**: Get workflow information
+- **update-workflow**: Update workflow settings
+- **approve-workflow**: Approve workflow for a document
+- **reject-workflow**: Reject workflow for a document
+
+### Attachment Operations
+
+- **add-attachment**: Add attachment to a document
+- **get-attachments**: List attachments for a document
+- **download-attachment**: Download a document attachment
+- **delete-attachment**: Delete a document attachment
 
 ## MCP Resources
 
@@ -113,7 +194,9 @@ The server provides access to these resources:
 
 ## Architecture
 
-This application follows the **electron-mcp pattern** for optimal separation of concerns:
+This application follows the **electron-mcp pattern** for optimal separation of concerns.
+
+> 🏗️ **Architecture Details**: See [ARCHITECTURE.md](ARCHITECTURE.md) for comprehensive architecture documentation.
 
 ### Key Components
 
@@ -214,19 +297,91 @@ Configure the MCP extension to use this server by adding it to your MCP settings
 
 ## API Coverage
 
-This server covers the following WebCenter Content API endpoints:
+This server provides **complete coverage** of the Oracle WebCenter Content REST API v1.1 specification, including all documented endpoints:
 
-- `/files/data` - Upload documents
-- `/files/{dDocName}/data` - Download documents
-- `/files/{dDocName}` - Get/update document metadata
-- `/files/{dDocName}/checkout` - Checkout documents
-- `/files/{dDocName}/reverseCheckout` - Reverse checkout
-- `/files/{dDocName}/capabilities` - Get document capabilities
-- `/files/workInProgress/items` - List work in progress
-- `/search/items` - Global search
-- `/folders` - Create folders
-- `/folders/{fFolderGUID}` - Get folder info
-- `/folders/search/items` - Search in folders
+### File Operations
+- `POST /files/data` - Upload new documents
+- `GET /files/{dDocName}/data` - Download document content
+- `POST /files/{dDocName}/data` - Upload document revision
+- `GET /files/.by.did/{dID}/data` - Download by revision ID
+- `PUT /files/{dDocName}` - Update document metadata
+- `PUT /files/.by.did/{dID}` - Update by revision ID
+- `DELETE /files/{dDocName}` - Delete document
+- `POST /files/{dDocName}/resubmitConversion` - Resubmit failed conversion
+- `POST /files/.by.did/{dID}/resubmitConversion` - Resubmit conversion by revision ID
+- `POST /files/{dDocName}/storage/.updateStorageTier` - Update storage tier
+- `POST /files/.by.did/{dID}/storage/.updateStorageTier` - Update storage tier by revision ID
+- `POST /files/{dDocName}/storage/.restoreFromArchive` - Restore from archive
+- `POST /files/.by.did/{dID}/storage/.restoreFromArchive` - Restore from archive by revision ID
+- `GET /files/workInProgress/items` - List work in progress
+- `POST /files/{dDocName}/.checkout` - Checkout document
+- `POST /files/{dDocName}/.undocheckout` - Undo checkout
+- `GET /files/{dDocName}/capabilities` - Get document capabilities
+- `GET /files/search/items` - Global document search
+
+### Folder Operations
+- `POST /folders` - Create folder or shortcut
+- `GET /folders/{fFolderGUID}` - Get folder information
+- `DELETE /folders/{fFolderGUID}` - Delete folder
+- `GET /folders/files/{fFileGUID}` - Get file info in folder
+- `DELETE /folders/files/{fFileGUID}` - Delete file in folder
+- `GET /folders/search/items` - Search within folders
+- `POST /folders/{fFolderGUID}/{dDocName}/filelinks` - Create file link
+- `GET /folders/{fFolderGUID}/capabilities` - Test folder capabilities
+
+### Public Links
+- `POST /publiclinks/.by.file/{fFileGUID}` - Create public link for file
+- `GET /publiclinks/.by.file/{fFileGUID}` - List public links for file
+- `POST /publiclinks/.by.folder/{fFolderGUID}` - Create public link for folder
+- `GET /publiclinks/.by.folder/{fFolderGUID}` - List public links for folder
+- `GET /publiclinks/{dLinkID}` - Get public link info
+
+### Application Links
+- `POST /applinks/.by.folder/{fFolderGUID}` - Create application link
+- `GET /applinks/.by.folder/{fFolderGUID}` - List application links for folder
+- `GET /applinks/{dAppLinkID}` - Get application link info
+- `DELETE /applinks/{dAppLinkID}` - Delete application link
+- `POST /applinks/{dAppLinkID}/.refreshAccessToken` - Refresh access token
+
+### Background Jobs
+- `POST /.bulk/.delete` - Start bulk delete job
+- `POST /.bulk/.download` - Start bulk download job
+- `POST /.bulk/categories/.add` - Start bulk add category job
+- `POST /.bulk/categories/.remove` - Start bulk remove category job
+- `POST /.bulk/{dJobID}/.cancel` - Cancel background job
+- `GET /.bulk/{dJobID}` - Get background job status
+- `GET /.bulk/{dJobID}/package` - Download background job package
+
+### Taxonomies
+- `POST /taxonomies` - Create taxonomy
+- `GET /taxonomies/{dTaxonomyGUID}` - Get taxonomy
+- `PUT /taxonomies/{dTaxonomyGUID}` - Update taxonomy
+
+### System Operations
+- `POST /system/docProfiles` - Create document profile
+- `GET /system/docProfiles/{dpName}` - Get document profile
+- `PUT /system/docProfiles/{dpName}` - Update document profile
+- `DELETE /system/docProfiles/{dpName}` - Delete document profile
+- `GET /system/{dataSource}/items` - Query data source
+- `GET /system/doctypes` - List document types
+- `POST /system/doctypes` - Create document type
+- `PUT /system/doctypes/{dDocType}` - Update document type
+- `DELETE /system/doctypes/{dDocType}` - Delete document type
+- `GET /system/docConfigInfo` - Get configuration info
+- `GET /system/docMetaInfo` - Get metadata fields info
+
+### Workflow Operations
+- `POST /workflow` - Create workflow
+- `GET /workflows/{dWfName}` - Get workflow information
+- `PUT /workflows/{dWfName}` - Edit workflow
+- `POST /files/{dDocName}/workflow/.approve` - Approve workflow
+- `POST /files/{dDocName}/workflow/.reject` - Reject workflow
+
+### Attachment Operations
+- `POST /files/{dDocName}/attachments/data` - Add attachment
+- `GET /files/{dDocName}/attachments/` - List attachments
+- `GET /files/{dDocName}/attachments/{extRenditionName}/data` - Download attachment
+- `DELETE /files/{dDocName}/attachments/{extRenditionName}` - Delete attachment
 
 ## Error Handling
 
