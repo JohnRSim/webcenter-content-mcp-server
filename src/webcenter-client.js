@@ -50,7 +50,7 @@ export class WebCenterContentClient {
       // If /about doesn't exist, try a simple search
       try {
         const response = await this.axiosInstance.get('/files/search/items', {
-          params: { query: '*', limit: 1 }
+          params: { q: '*', limit: 1 }
         });
         return {
           success: true,
@@ -109,14 +109,57 @@ export class WebCenterContentClient {
   }
 
   /**
+   * Build a properly formatted search query for WebCenter Content
+   * @param {Object} querySpec - Query specification
+   * @param {string} querySpec.text - Simple text to search for (optional)
+   * @param {Object} querySpec.filters - Metadata filters (optional)
+   * @returns {string} Formatted query string
+   */
+  buildSearchQuery(querySpec) {
+    const { text, filters } = querySpec;
+    let queryParts = [];
+    
+    // Add text search if provided
+    if (text) {
+      queryParts.push(`<qsch>${text}</qsch>`);
+    }
+    
+    // Add metadata filters if provided
+    if (filters && Object.keys(filters).length > 0) {
+      const filterClauses = [];
+      
+      for (const [field, criteria] of Object.entries(filters)) {
+        if (criteria.operator === 'contains') {
+          filterClauses.push(`${field} <contains> \`${criteria.value}\``);
+        } else if (criteria.operator === 'equals') {
+          filterClauses.push(`${field} <equals> \`${criteria.value}\``);
+        }
+      }
+      
+      if (filterClauses.length > 0) {
+        queryParts.push(filterClauses.join(' <AND> '));
+      }
+    }
+    
+    // Join all parts with AND
+    return queryParts.join(' <AND> ');
+  }
+
+  /**
    * Search for documents globally
-   * @param {string} query - Search query
+   * @param {string} query - Search query (use buildSearchQuery for complex queries)
    * @param {Object} options - Search options
    * @returns {Promise<Object>} Search results
    */
   async searchDocuments(query, options = {}) {
+    // Auto-format simple queries that aren't already formatted
+    let formattedQuery = query;
+    if (query && query !== '*' && !query.includes('<') && !query.includes('>')) {
+      formattedQuery = `<qsch>${query}</qsch>`;
+    }
+    
     const params = {
-      query,
+      q: formattedQuery,
       ...options
     };
     

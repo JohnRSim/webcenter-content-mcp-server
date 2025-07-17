@@ -34,7 +34,6 @@ class WebCenterContentMCPServer {
       this.mode = 'stdio';
     }
     
-    console.log('MCP Server constructor - Mode:', this.mode, 'Port:', this.port);
     
     this.server = new Server(
       {
@@ -61,7 +60,6 @@ class WebCenterContentMCPServer {
 
   getWccClient() {
     if (!this.wccClient) {
-      console.log('Initializing WebCenter Content client...');
       this.wccClient = new WebCenterContentClient(
         process.env.WCC_BASE_URL,
         process.env.WCC_USER,
@@ -1116,6 +1114,148 @@ class WebCenterContentMCPServer {
             required: ['dDocName', 'extRenditionName'],
           },
         },
+        {
+          name: 'build-search-query',
+          description: `Build a properly formatted search query for WebCenter Content. Use this BEFORE calling search-documents when you need to search by metadata fields or combine text with filters.
+
+METADATA FIELDS MAPPING:
+- Security Group → dSecurityGroup
+- Document Title → dDocTitle  
+- Document Name/Public ID → dDocName
+- Internal ID → dID
+- Author → dDocAuthor
+- Document Type → dDocType
+- Original Filename → dOriginalName
+- Creation Date → dInDate
+- Modified Date → dOutDate
+
+EXAMPLES:
+- "Find files by security group abc" → filters: {dSecurityGroup: {operator: "contains", value: "abc"}}
+- "Search documents by title contract" → filters: {dDocTitle: {operator: "contains", value: "contract"}}
+- "Find files by author john" → filters: {dDocAuthor: {operator: "contains", value: "john"}}
+- "Search for contract files in fishbowl security group" → text: "contract", filters: {dSecurityGroup: {operator: "contains", value: "fishbowl"}}`,
+          inputSchema: {
+            type: 'object',
+            properties: {
+              text: {
+                type: 'string',
+                description: 'Simple text to search for (optional)',
+              },
+              filters: {
+                type: 'object',
+                description: 'Metadata filters (optional)',
+                properties: {
+                  dSecurityGroup: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Filter value',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                  dDocAuthor: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Filter value',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                  dDocTitle: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Filter value',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                  dOriginalName: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Filter value',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                  dDocType: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Filter value',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                  dInDate: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Creation date (YYYY-MM-DD format)',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                  dOutDate: {
+                    type: 'object',
+                    properties: {
+                      operator: {
+                        type: 'string',
+                        enum: ['contains', 'equals'],
+                        description: 'Filter operator',
+                      },
+                      value: {
+                        type: 'string',
+                        description: 'Modified date (YYYY-MM-DD format)',
+                      },
+                    },
+                    required: ['operator', 'value'],
+                  },
+                },
+                additionalProperties: true,
+              },
+            },
+          },
+        },
       ],
     };
   }
@@ -2006,6 +2146,17 @@ class WebCenterContentMCPServer {
             ],
           };
 
+        case 'build-search-query':
+          const formattedQuery = this.getWccClient().buildSearchQuery(args);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: formattedQuery,
+              },
+            ],
+          };
+
         default:
           throw new Error(`Unknown tool: ${name}`);
       }
@@ -2296,6 +2447,148 @@ class WebCenterContentMCPServer {
                 },
               },
               required: ['dDocName'],
+            },
+          },
+          {
+            name: 'build-search-query',
+            description: `Build a properly formatted search query for WebCenter Content. Use this BEFORE calling search-documents when you need to search by metadata fields or combine text with filters.
+
+METADATA FIELDS MAPPING:
+- Security Group → dSecurityGroup
+- Document Title → dDocTitle  
+- Document Name/Public ID → dDocName
+- Internal ID → dID
+- Author → dDocAuthor
+- Document Type → dDocType
+- Original Filename → dOriginalName
+- Creation Date → dInDate
+- Modified Date → dOutDate
+
+EXAMPLES:
+- "Find files by security group abc" → filters: {dSecurityGroup: {operator: "contains", value: "abc"}}
+- "Search documents by title contract" → filters: {dDocTitle: {operator: "contains", value: "contract"}}
+- "Find files by author john" → filters: {dDocAuthor: {operator: "contains", value: "john"}}
+- "Search for contract files in fishbowl security group" → text: "contract", filters: {dSecurityGroup: {operator: "contains", value: "fishbowl"}}`,
+            inputSchema: {
+              type: 'object',
+              properties: {
+                text: {
+                  type: 'string',
+                  description: 'Simple text to search for (optional)',
+                },
+                filters: {
+                  type: 'object',
+                  description: 'Metadata filters (optional)',
+                  properties: {
+                    dSecurityGroup: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Filter value',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                    dDocAuthor: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Filter value',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                    dDocTitle: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Filter value',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                    dOriginalName: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Filter value',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                    dDocType: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Filter value',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                    dInDate: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Creation date (YYYY-MM-DD format)',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                    dOutDate: {
+                      type: 'object',
+                      properties: {
+                        operator: {
+                          type: 'string',
+                          enum: ['contains', 'equals'],
+                          description: 'Filter operator',
+                        },
+                        value: {
+                          type: 'string',
+                          description: 'Modified date (YYYY-MM-DD format)',
+                        },
+                      },
+                      required: ['operator', 'value'],
+                    },
+                  },
+                  additionalProperties: true,
+                },
+              },
             },
           },
         ],
@@ -3117,6 +3410,17 @@ class WebCenterContentMCPServer {
               ],
             };
 
+          case 'build-search-query':
+            const formattedQuery = this.getWccClient().buildSearchQuery(args);
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: formattedQuery,
+                },
+              ],
+            };
+
           default:
             throw new Error(`Unknown tool: ${name}`);
         }
@@ -3164,7 +3468,6 @@ class WebCenterContentMCPServer {
     this.app.post('/mcp', async (req, res) => {
       try {
         const mcpRequest = req.body;
-        console.log('MCP HTTP request:', mcpRequest?.method);
         
         // Handle MCP protocol requests
         let result;
@@ -3277,7 +3580,6 @@ class WebCenterContentMCPServer {
     return new Promise((resolve, reject) => {
       try {
         this.httpServer = this.app.listen(this.port, () => {
-          console.log(`WebCenter Content MCP Server running on port ${this.port}`);
           resolve();
         });
         
@@ -3296,7 +3598,6 @@ class WebCenterContentMCPServer {
     if (this.httpServer) {
       return new Promise((resolve) => {
         this.httpServer.close(() => {
-          console.log('HTTP Server stopped');
           resolve();
         });
       });
@@ -3313,13 +3614,10 @@ class WebCenterContentMCPServer {
   }
 
   async run() {
-    console.log('Starting MCP Server...');
     
     if (this.mode === 'http') {
-      console.log('Starting MCP Server in HTTP mode...');
       try {
         await this.startHttpServer();
-        console.log('MCP Server started successfully in HTTP mode');
         // Keep process alive in HTTP mode
         process.stdin.resume();
         
@@ -3333,7 +3631,6 @@ class WebCenterContentMCPServer {
         process.exit(1);
       }
     } else {
-      console.log('Starting MCP Server in stdio mode...');
       try {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
@@ -3362,7 +3659,6 @@ if (isMainModule) {
   
   // Handle graceful shutdown
   process.on('SIGINT', async () => {
-    console.log('Shutting down MCP Server...');
     if (server.mode === 'http') {
       await server.stopHttpServer();
     }
