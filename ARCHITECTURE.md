@@ -24,12 +24,17 @@ This application follows the **electron-mcp pattern** for optimal separation of 
   - Lazy-load WebCenter Content client for better error handling
 
 ### 3. WebCenter Content Client (`src/webcenter-client.js`)
-- **Purpose**: Oracle WebCenter Content API integration
+- **Purpose**: Complete Oracle WebCenter Content REST API v1.1 integration
 - **Responsibilities**:
   - HTTP Basic Authentication with WebCenter Content
-  - Document management operations (search, download, metadata)
-  - Folder operations (create, search, info)
-  - Workflow management (checkout, work-in-progress)
+  - Complete document lifecycle management (CRUD operations, revisions, conversions)
+  - Comprehensive folder operations (create, delete, search, file management)
+  - Storage management (tier updates, archive restoration)
+  - Public and application link management
+  - Background job orchestration (bulk operations, monitoring)
+  - Workflow management (creation, approval, rejection)
+  - Taxonomy and system configuration management
+  - Attachment handling (upload, download, delete)
   - Error handling and API response processing
 
 ### 4. Standalone Launcher (`mcp-server-standalone.js`)
@@ -162,22 +167,99 @@ These can be set via:
 
 ## MCP Protocol Implementation
 
-### Tools Available
+### Complete Tool Coverage (56 Tools)
+
+The MCP server provides comprehensive coverage of the Oracle WebCenter Content REST API v1.1:
+
+#### Document Management Tools
 - **search-documents**: Search WebCenter Content documents
 - **get-document-metadata**: Retrieve document metadata
 - **download-document**: Download documents to local filesystem
-- **update-document-metadata**: Update document metadata
-- **create-folder**: Create new folders
-- **get-folder-info**: Get folder information
-- **search-in-folder**: Search within specific folders
+- **download-document-by-revision-id**: Download specific document revision
+- **update-document-metadata**: Update document metadata with versioning
+- **update-document-by-revision-id**: Update specific document revision
+- **delete-document**: Delete documents from WebCenter Content
+- **upload-document-revision**: Upload new document revisions
 - **checkout-document**: Checkout documents for editing
 - **reverse-checkout**: Undo document checkout
-- **get-document-capabilities**: Get document permissions
+- **get-document-capabilities**: Test document permissions
+- **resubmit-conversion**: Resubmit failed document conversions
+- **resubmit-conversion-by-revision-id**: Resubmit conversion by revision ID
+
+#### Storage Management Tools
+- **update-storage-tier**: Change document storage tier
+- **update-storage-tier-by-revision-id**: Change storage tier by revision ID
+- **restore-from-archive**: Restore documents from archive
+- **restore-from-archive-by-revision-id**: Restore from archive by revision ID
+
+#### Folder Management Tools
+- **create-folder**: Create new folders
+- **delete-folder**: Delete folders
+- **get-folder-info**: Get folder information
+- **get-folder-file-info**: Get file information within folders
+- **delete-folder-file**: Delete files within folders
+- **search-in-folder**: Search within specific folders
+- **create-file-link**: Create file links within folders
+- **get-folder-capabilities**: Test folder permissions
+
+#### Public Link Management Tools
+- **create-public-link-for-file**: Create public links for files
+- **get-public-links-for-file**: List public links for files
+- **create-public-link-for-folder**: Create public links for folders
+- **get-public-links-for-folder**: List public links for folders
+- **get-public-link-info**: Get public link information
+
+#### Application Link Management Tools
+- **create-application-link**: Create application links
+- **get-application-links-for-folder**: List application links for folders
+- **get-application-link-info**: Get application link information
+- **delete-application-link**: Delete application links
+- **refresh-application-link-token**: Refresh application link tokens
+
+#### Background Job Management Tools
+- **start-bulk-delete-job**: Start bulk delete operations
+- **start-bulk-download-job**: Start bulk download operations
+- **start-bulk-add-category-job**: Start bulk category addition
+- **start-bulk-remove-category-job**: Start bulk category removal
+- **cancel-background-job**: Cancel background jobs
+- **get-background-job-status**: Monitor background job status
+- **download-background-job-package**: Download job results
+
+#### Taxonomy Management Tools
+- **create-taxonomy**: Create new taxonomies
+- **get-taxonomy**: Get taxonomy information
+- **update-taxonomy**: Update taxonomy settings
+
+#### System Management Tools
+- **get-document-types**: List system document types
+- **get-document-config-info**: Get system configuration
+- **get-document-meta-info**: Get metadata field information
+- **query-data-source**: Query system data sources
+
+#### Workflow Management Tools
+- **create-workflow**: Create new workflows
+- **get-workflow**: Get workflow information
+- **update-workflow**: Update workflow settings
+- **approve-workflow**: Approve workflows for documents
+- **reject-workflow**: Reject workflows for documents
+
+#### Attachment Management Tools
+- **add-attachment**: Add attachments to documents
+- **get-attachments**: List document attachments
+- **download-attachment**: Download document attachments
+- **delete-attachment**: Delete document attachments
 
 ### Resources Available
 - **webcenter://documents**: Recent documents and search results
 - **webcenter://folders**: Folder structure and information
 - **webcenter://work-in-progress**: Documents currently being worked on
+
+### API Coverage Statistics
+- **Total Endpoints**: 65+ REST API endpoints covered
+- **Tool Categories**: 9 major functional categories
+- **MCP Tools**: 56 comprehensive tools
+- **API Version**: Complete Oracle WebCenter Content REST API v1.1
+- **Operations**: Full CRUD operations across all resource types
 
 ## Security Considerations
 
