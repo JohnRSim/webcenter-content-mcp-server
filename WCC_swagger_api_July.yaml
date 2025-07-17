@@ -1,0 +1,2289 @@
+openapi: 3.0.1
+info:
+  title: Oracle WebCenter Content REST API
+  version: v1.1
+  description: Complete OpenAPI 3.0 specification covering all WebCenter Content v1.1
+    REST endpoints.
+servers:
+- url: https://{host}/documents/wcc/api/{version}
+  description: Base URL for WebCenter Content REST APIs
+  variables:
+    host:
+      default: www.example.com
+      description: Your WebCenter Content host name
+    version:
+      default: v1.1
+security:
+- BasicAuth: []
+- BearerAuth: []
+- ApiKeyAuth: []
+tags:
+- name: Files
+  description: File operations upload, download, revisions, conversions, storage tiers,
+    archive restores, work-in-progress, metadata, checkout, capabilities.
+- name: Folders
+  description: Folder operations create/delete folders & files, file links, folder
+    search, capabilities.
+- name: PublicLinks
+  description: Public link management for files and folders.
+- name: ApplicationLinks
+  description: Application link management for folders.
+- name: Search
+  description: Global search across content.
+- name: BackgroundJobs
+  description: Bulk background job operations delete, download, category actions,
+    cancel, status, package download.
+- name: Taxonomies
+  description: Taxonomy and category management.
+- name: System
+  description: System-level endpoints document profiles, data sources, document types,
+    configuration & metadata info.
+- name: Workflow
+  description: Workflow management create, edit, approve, reject workflows.
+- name: Attachments
+  description: Attachment management for documents.
+paths:
+  /files/data:
+    post:
+      tags:
+      - Files
+      summary: Upload a new document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                metadataValues:
+                  type: string
+                  description: JSON string containing document metadata
+                primaryFile:
+                  type: string
+                  format: binary
+                  description: The primary file to upload
+                alternateFile:
+                  type: string
+                  format: binary
+                  description: Optional alternate file (e.g., web viewable rendition)
+              required:
+              - metadataValues
+              - primaryFile
+      responses:
+        '201':
+          description: Document created
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralErrorResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneralErrorResponse'
+  /files/{dDocName}/data:
+    get:
+      tags:
+      - Files
+      summary: Download document content
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        schema:
+          type: string
+          description: Specific version to download
+      - name: rendition
+        in: query
+        schema:
+          type: string
+          enum:
+          - primary
+          - alternate
+          - web
+          - rendition:T
+          description: Type of rendition to download
+      - name: Range
+        in: header
+        schema:
+          type: string
+          description: Range header for partial content requests
+      responses:
+        '200':
+          description: Full content stream
+          content:
+            application/octet-stream: {}
+        '206':
+          description: Partial content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '416':
+          description: Range Not Satisfiable
+        '500':
+          description: Server error
+    post:
+      tags:
+      - Files
+      summary: Upload a new revision
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                metadataValues:
+                  type: string
+                  description: JSON string containing document metadata
+                primaryFile:
+                  type: string
+                  format: binary
+                  description: The primary file to upload
+                alternateFile:
+                  type: string
+                  format: binary
+                  description: Optional alternate file (e.g., web viewable rendition)
+              required:
+              - metadataValues
+              - primaryFile
+      responses:
+        '201':
+          description: Revision created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/.by.did/{dID}/data:
+    get:
+      tags:
+      - Files
+      summary: Download by revision ID
+      parameters:
+      - name: dID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: rendition
+        in: query
+        schema:
+          type: string
+          enum:
+          - primary
+          - alternate
+          - web
+          - rendition:T
+      - name: Range
+        in: header
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Full content stream
+        '206':
+          description: Partial content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '416':
+          description: Range Not Satisfiable
+        '500':
+          description: Server error
+  /files/{dDocName}/resubmitConversion:
+    post:
+      tags:
+      - Files
+      summary: Resubmit failed conversion
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        schema:
+          type: string
+      - name: alwaysResubmit
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /files/.by.did/{dID}/resubmitConversion:
+    post:
+      tags:
+      - Files
+      summary: Resubmit failed conversion by dID
+      parameters:
+      - name: dID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /files/{dDocName}/storage/.updateStorageTier:
+    post:
+      tags:
+      - Files
+      summary: Change storage tier
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: storageTier
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /files/.by.did/{dID}/storage/.updateStorageTier:
+    post:
+      tags:
+      - Files
+      summary: Change storage tier by dID
+      parameters:
+      - name: dID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: storageTier
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /files/{dDocName}/storage/.restoreFromArchive:
+    post:
+      tags:
+      - Files
+      summary: Restore from archive
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        schema:
+          type: string
+      - name: hours
+        in: query
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /files/.by.did/{dID}/storage/.restoreFromArchive:
+    post:
+      tags:
+      - Files
+      summary: Restore from archive by dID
+      parameters:
+      - name: dID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: hours
+        in: query
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /files/workInProgress/items:
+    get:
+      tags:
+      - Files
+      summary: List work in progress
+      parameters:
+      - name: fields
+        in: query
+        schema:
+          type: string
+      - name: orderBy
+        in: query
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: WIP list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkInProgressResponse'
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/{dDocName}:
+    put:
+      tags:
+      - Files
+      summary: Update document metadata/file
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        schema:
+          type: string
+      - name: createPrimaryMetaFile
+        in: query
+        schema:
+          type: boolean
+      - name: createAlternateMetaFile
+        in: query
+        schema:
+          type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataChangeObjectParameter'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+    delete:
+      tags:
+      - Files
+      summary: Delete document
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: version
+        in: query
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Document deleted
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /files/.by.did/{dID}:
+    put:
+      tags:
+      - Files
+      summary: Update by dID
+      parameters:
+      - name: dID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: createPrimaryMetaFile
+        in: query
+        schema:
+          type: boolean
+      - name: createAlternateMetaFile
+        in: query
+        schema:
+          type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MetadataChangeObjectParameter'
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/{dDocName}/.checkout:
+    post:
+      tags:
+      - Files
+      summary: Checkout a document
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/{dDocName}/.undocheckout:
+    post:
+      tags:
+      - Files
+      summary: Reverse checkout
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/{dDocName}/capabilities:
+    get:
+      tags:
+      - Files
+      summary: Test document capabilities
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: testedCapabilities
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Capabilities result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /folders:
+    post:
+      tags:
+      - Folders
+      summary: Create a folder or shortcut
+      parameters:
+      - name: fParentGUID
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: fFolderName
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: fTargetGUID
+        in: query
+        schema:
+          type: string
+      - name: ConflictResolutionMethod
+        in: query
+        schema:
+          type: string
+      - name: isForceInheritSecurityForFolderCreation
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '201':
+          description: Folder created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /folders/{fFolderGUID}:
+    get:
+      tags:
+      - Folders
+      summary: Retrieve folder info
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Folder info
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    delete:
+      tags:
+      - Folders
+      summary: Delete a folder
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /folders/files/{fFileGUID}:
+    get:
+      tags:
+      - Folders
+      summary: Get file info in folder
+      parameters:
+      - name: fFileGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: File info
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    delete:
+      tags:
+      - Folders
+      summary: Delete file in folder
+      parameters:
+      - name: fFileGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /folders/search/items:
+    get:
+      tags:
+      - Folders
+      summary: Search within folders
+      parameters:
+      - name: fFolderGUID
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: whereClause
+        in: query
+        schema:
+          type: string
+      - name: orderBy
+        in: query
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /folders/{fFolderGUID}/{dDocName}/filelinks:
+    post:
+      tags:
+      - Folders
+      summary: Create file link
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: fFileType
+        in: query
+        schema:
+          type: string
+      - name: ConflictResolutionMethod
+        in: query
+        schema:
+          type: string
+      responses:
+        '201':
+          description: Link created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        '500':
+          description: Server error
+  /folders/{fFolderGUID}/capabilities:
+    get:
+      tags:
+      - Folders
+      summary: Test folder capabilities
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: testedCapabilities
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Capabilities result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /publiclinks/.by.file/{fFileGUID}:
+    post:
+      tags:
+      - PublicLinks
+      summary: Create public link for file
+      parameters:
+      - name: fFileGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicLinkObject'
+      responses:
+        '201':
+          description: Public link created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    get:
+      tags:
+      - PublicLinks
+      summary: List public links for file
+      parameters:
+      - name: fFileGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: offset
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: List of public links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicLinkListResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /publiclinks/.by.folder/{fFolderGUID}:
+    post:
+      tags:
+      - PublicLinks
+      summary: Create public link for folder
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublicLinkObject'
+      responses:
+        '201':
+          description: Public link created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    get:
+      tags:
+      - PublicLinks
+      summary: List public links for folder
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: offset
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: List of public links
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicLinkListResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /publiclinks/{dLinkID}:
+    get:
+      tags:
+      - PublicLinks
+      summary: Get public link info
+      parameters:
+      - name: dLinkID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Public link info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicLinkResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /applinks/.by.folder/{fFolderGUID}:
+    post:
+      tags:
+      - ApplicationLinks
+      summary: Create application link
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationLinkObject'
+      responses:
+        '201':
+          description: Application link created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    get:
+      tags:
+      - ApplicationLinks
+      summary: List application links for folder
+      parameters:
+      - name: fFolderGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: offset
+        in: query
+        schema:
+          type: integer
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: List of application links
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /applinks/{dAppLinkID}:
+    get:
+      tags:
+      - ApplicationLinks
+      summary: Get application link info
+      parameters:
+      - name: dAppLinkID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Application link info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationLinkResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    delete:
+      tags:
+      - ApplicationLinks
+      summary: Delete application link
+      parameters:
+      - name: dAppLinkID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /applinks/{dAppLinkID}/.refreshAccessToken:
+    post:
+      tags:
+      - ApplicationLinks
+      summary: Refresh applink access token
+      parameters:
+      - name: dAppLinkID
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppLinkRefreshObject'
+      responses:
+        '201':
+          description: Token refreshed
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/search/items:
+    get:
+      tags:
+      - Search
+      summary: Search documents
+      parameters:
+      - name: q
+        in: query
+        schema:
+          type: string
+          description: Search query
+      - name: fields
+        in: query
+        schema:
+          type: string
+          description: Comma-separated list of fields to return
+      - name: orderBy
+        in: query
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      - name: offset
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /.bulk/.delete:
+    post:
+      tags:
+      - BackgroundJobs
+      summary: Start bulk delete job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackgroundJobRequestObject'
+      responses:
+        '202':
+          description: Job started
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+  /.bulk/.download:
+    post:
+      tags:
+      - BackgroundJobs
+      summary: Start bulk download job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackgroundJobRequestObject'
+      responses:
+        '202':
+          description: Job started
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '500':
+          description: Server error
+  /.bulk/categories/.add:
+    post:
+      tags:
+      - BackgroundJobs
+      summary: Start bulk add category job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackgroundCategoryActionRequestObject'
+      responses:
+        '202':
+          description: Job started
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /.bulk/categories/.remove:
+    post:
+      tags:
+      - BackgroundJobs
+      summary: Start bulk remove category job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackgroundCategoryActionRequestObject'
+      responses:
+        '202':
+          description: Job started
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /.bulk/{dJobID}/.cancel:
+    post:
+      tags:
+      - BackgroundJobs
+      summary: Cancel a background job
+      parameters:
+      - name: dJobID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Canceled request sent
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /.bulk/{dJobID}:
+    get:
+      tags:
+      - BackgroundJobs
+      summary: Get status of a background job
+      parameters:
+      - name: dJobID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackgroundJobStatus'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /.bulk/{dJobID}/package:
+    get:
+      tags:
+      - BackgroundJobs
+      summary: Download background job package
+      parameters:
+      - name: dJobID
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Range
+        in: header
+        schema:
+          type: string
+      responses:
+        '200':
+          description: File stream
+        '206':
+          description: Partial content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '416':
+          description: Range Not Satisfiable
+        '500':
+          description: Server error
+  /taxonomies:
+    post:
+      tags:
+      - Taxonomies
+      summary: Create a taxonomy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyCreateObject'
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /taxonomies/{dTaxonomyGUID}:
+    get:
+      tags:
+      - Taxonomies
+      summary: Get a taxonomy
+      parameters:
+      - name: dTaxonomyGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Taxonomy info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaxonomyCreateObject'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    put:
+      tags:
+      - Taxonomies
+      summary: Update a taxonomy
+      parameters:
+      - name: dTaxonomyGUID
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaxonomyUpdateObject'
+      responses:
+        '204':
+          description: Updated
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /system/docProfiles:
+    post:
+      tags:
+      - System
+      summary: Create document profile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /system/docProfiles/{dpName}:
+    get:
+      tags:
+      - System
+      summary: Get document profile
+      parameters:
+      - name: dpName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocProfileResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+    put:
+      tags:
+      - System
+      summary: Update document profile
+      parameters:
+      - name: dpName
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '204':
+          description: Updated
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+    delete:
+      tags:
+      - System
+      summary: Delete document profile
+      parameters:
+      - name: dpName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /system/{dataSource}/items:
+    get:
+      tags:
+      - System
+      summary: Query data source
+      parameters:
+      - name: dataSource
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: whereClause
+        in: query
+        schema:
+          type: string
+      - name: orderClause
+        in: query
+        schema:
+          type: string
+      - name: maxRows
+        in: query
+        schema:
+          type: integer
+      - name: startRow
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Query result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataSourceResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /system/doctypes:
+    get:
+      tags:
+      - System
+      summary: List document types
+      responses:
+        '200':
+          description: Doc types list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocTypeResponse'
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+    post:
+      tags:
+      - System
+      summary: Create document type
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /system/doctypes/{dDocType}:
+    put:
+      tags:
+      - System
+      summary: Update document type
+      parameters:
+      - name: dDocType
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '204':
+          description: Updated
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+    delete:
+      tags:
+      - System
+      summary: Delete document type
+      parameters:
+      - name: dDocType
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /system/docConfigInfo:
+    get:
+      tags:
+      - System
+      summary: Get configuration info
+      parameters:
+      - name: rowLimit
+        in: query
+        schema:
+          type: integer
+      - name: includeResultSets
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Configuration info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocConfigInfoResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /system/docMetaInfo:
+    get:
+      tags:
+      - System
+      summary: Get metadata fields info
+      responses:
+        '200':
+          description: Metadata info
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocMetaInfoResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /workflow:
+    post:
+      tags:
+      - Workflow
+      summary: Create a new workflow
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                dWfName:
+                  type: string
+                  description: Workflow name
+                dWfType:
+                  type: string
+                  description: Workflow type
+                dWfDescription:
+                  type: string
+                  description: Workflow description
+                dSecurityGroup:
+                  type: string
+                  description: Security group for the workflow
+                dWfCriteriaName:
+                  type: string
+                  description: Criteria name (conditional)
+                dWfCriteriaValue:
+                  type: string
+                  description: Criteria value (conditional)
+              required:
+              - dWfName
+              - dWfType
+              - dWfDescription
+              - dSecurityGroup
+      responses:
+        '201':
+          description: Workflow created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /workflows/{dWfName}:
+    get:
+      tags:
+      - Workflow
+      summary: Get workflow information
+      parameters:
+      - name: dWfName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Workflow information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+    put:
+      tags:
+      - Workflow
+      summary: Edit workflow
+      parameters:
+      - name: dWfName
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowUpdateRequest'
+      responses:
+        '204':
+          description: Workflow updated
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /files/{dDocName}/workflow/.approve:
+    post:
+      tags:
+      - Workflow
+      summary: Approve workflow for document
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+        description: dDocName of the document in workflow
+      responses:
+        '204':
+          description: Workflow approved
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /files/{dDocName}/workflow/.reject:
+    post:
+      tags:
+      - Workflow
+      summary: Reject workflow for document
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+        description: dDocName of the document in workflow
+      - name: rejectMessage
+        in: query
+        required: false
+        schema:
+          type: string
+        description: The rejection message
+      responses:
+        '204':
+          description: Workflow rejected
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+  /files/{dDocName}/attachments/data:
+    post:
+      tags:
+      - Attachments
+      summary: Add attachment to document
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                extRenditionName:
+                  type: string
+                  description: External rendition name (required)
+                extRenditionDescription:
+                  type: string
+                  description: External rendition description (optional)
+                extRenditionFile:
+                  type: string
+                  format: binary
+                  description: Attachment file (required)
+                version:
+                  type: string
+                  description: Version (optional)
+              required:
+              - extRenditionName
+              - extRenditionFile
+      responses:
+        '201':
+          description: Attachment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/{dDocName}/attachments/:
+    get:
+      tags:
+      - Attachments
+      summary: List attachments for document
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Attachment list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AttachmentListResponse'
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '500':
+          description: Server error
+  /files/{dDocName}/attachments/{extRenditionName}/data:
+    get:
+      tags:
+      - Attachments
+      summary: Download attachment
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: extRenditionName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: Range
+        in: header
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Attachment file stream
+          content:
+            application/octet-stream: {}
+        '206':
+          description: Partial content
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '416':
+          description: Range Not Satisfiable
+        '500':
+          description: Server error
+  /files/{dDocName}/attachments/{extRenditionName}:
+    delete:
+      tags:
+      - Attachments
+      summary: Delete attachment
+      parameters:
+      - name: dDocName
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: extRenditionName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Attachment deleted
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '500':
+          description: Server error
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Basic Authentication with username and password
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key authentication
+  schemas:
+    GeneralErrorResponse:
+      type: object
+      additionalProperties: true
+    WorkInProgressResponse:
+      type: object
+      additionalProperties: true
+    MetadataChangeObjectParameter:
+      type: object
+      additionalProperties: true
+    CapabilitiesResponse:
+      type: object
+      additionalProperties: true
+    SearchResponse:
+      type: object
+      additionalProperties: true
+    PublicLinkObject:
+      type: object
+      additionalProperties: true
+    PublicLinkResponse:
+      type: object
+      additionalProperties: true
+    PublicLinkListResponse:
+      type: object
+      properties:
+        count:
+          type: integer
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicLinkResponse'
+    ApplicationLinkObject:
+      type: object
+      additionalProperties: true
+    ApplicationLinkResponse:
+      type: object
+      additionalProperties: true
+    AppLinkRefreshObject:
+      type: object
+      additionalProperties: true
+    BackgroundJobRequestObject:
+      type: object
+      additionalProperties: true
+    BackgroundCategoryActionRequestObject:
+      type: object
+      additionalProperties: true
+    BackgroundJobStatus:
+      type: object
+      additionalProperties: true
+    DocProfileResponse:
+      type: object
+      additionalProperties: true
+    DataSourceResponse:
+      type: object
+      additionalProperties: true
+    DocTypeResponse:
+      type: object
+      additionalProperties: true
+    DocConfigInfoResponse:
+      type: object
+      additionalProperties: true
+    DocMetaInfoResponse:
+      type: object
+      additionalProperties: true
+    TaxonomyCreateObject:
+      type: object
+      additionalProperties: true
+    TaxonomyUpdateObject:
+      type: object
+      additionalProperties: true
+    WorkflowListResponse:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          description: Total number of workflows
+        workflows:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowResponse'
+    WorkflowResponse:
+      type: object
+      properties:
+        workflowId:
+          type: string
+          description: Unique workflow identifier
+        workflowName:
+          type: string
+          description: Name of the workflow
+        workflowType:
+          type: string
+          description: Type of workflow
+        status:
+          type: string
+          enum: [pending, approved, rejected, in_progress, completed]
+          description: Current workflow status
+        createdBy:
+          type: string
+          description: User who created the workflow
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when workflow was created
+        lastModifiedDate:
+          type: string
+          format: date-time
+          description: Date when workflow was last modified
+        assignedTo:
+          type: string
+          description: User assigned to the workflow
+        dueDate:
+          type: string
+          format: date-time
+          description: Due date for workflow completion
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          description: Workflow priority
+        description:
+          type: string
+          description: Workflow description
+        attachments:
+          type: array
+          items:
+            type: string
+          description: List of attachment IDs
+    WorkflowCreateRequest:
+      type: object
+      required:
+      - workflowName
+      - workflowType
+      - assignedTo
+      properties:
+        workflowName:
+          type: string
+          description: Name of the workflow
+        workflowType:
+          type: string
+          description: Type of workflow
+        assignedTo:
+          type: string
+          description: User to assign the workflow to
+        dueDate:
+          type: string
+          format: date-time
+          description: Due date for workflow completion
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          default: medium
+          description: Workflow priority
+        description:
+          type: string
+          description: Workflow description
+        attachments:
+          type: array
+          items:
+            type: string
+          description: List of attachment IDs
+    WorkflowUpdateRequest:
+      type: object
+      properties:
+        workflowName:
+          type: string
+          description: Name of the workflow
+        status:
+          type: string
+          enum: [pending, approved, rejected, in_progress, completed]
+          description: Current workflow status
+        assignedTo:
+          type: string
+          description: User assigned to the workflow
+        dueDate:
+          type: string
+          format: date-time
+          description: Due date for workflow completion
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+          description: Workflow priority
+        description:
+          type: string
+          description: Workflow description
+    AttachmentResponse:
+      type: object
+      properties:
+        attachmentId:
+          type: string
+          description: Unique attachment identifier
+        fileName:
+          type: string
+          description: Name of the attachment file
+        fileSize:
+          type: integer
+          description: Size of the file in bytes
+        contentType:
+          type: string
+          description: MIME type of the file
+        attachmentType:
+          type: string
+          description: Type of attachment
+        description:
+          type: string
+          description: Attachment description
+        createdBy:
+          type: string
+          description: User who created the attachment
+        createdDate:
+          type: string
+          format: date-time
+          description: Date when attachment was created
+        lastModifiedDate:
+          type: string
+          format: date-time
+          description: Date when attachment was last modified
+        dDocName:
+          type: string
+          description: Document name this attachment belongs to
+        downloadUrl:
+          type: string
+          description: URL to download the attachment
+    AttachmentListResponse:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          description: Total number of attachments
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttachmentResponse'

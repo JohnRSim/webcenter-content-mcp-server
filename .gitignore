@@ -1,0 +1,14 @@
+node_modules
+
+# Output
+/dist-electron
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test

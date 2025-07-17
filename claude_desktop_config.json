@@ -1,0 +1,30 @@
+{
+	"mcpServers": {
+		"webcenter-content-stdio": {
+			"command": "node",
+			"args": [
+				"C:\\path\\to\\webcenter-content-mcp-server\\mcp-server-standalone.js"
+			],
+			"env": {
+				"WCC_BASE_URL": "https://your-webcenter-domain.com/documents/wcc/api/v1.1",
+				"WCC_USER": "your-username",
+				"WCC_PASSWORD": "your-password"
+			}
+		},
+		"webcenter-content-server": {
+			"command": "node",
+			"args": [
+				"C:\\path\\to\\webcenter-content-mcp-server\\src\\mcp-server.js"
+			],
+			"env": {
+				"WCC_BASE_URL": "https://your-webcenter-domain.com/documents/wcc/api/v1.1",
+				"WCC_USER": "your-username",
+				"WCC_PASSWORD": "your-password"
+			}
+		},
+		"webcenter-content-web": {
+			"type": "http",
+			"url": "http://localhost:3999/mcp"
+		}
+	}
+}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebCenter Content MCP Server</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>WebCenter Content MCP Server</h1>
+            <p>Configure your Oracle WebCenter Content connection</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>Configuration</h2>
+                <form id="configForm">
+                    <div class="form-group">
+                        <label for="useEnvVars">
+                            <input type="checkbox" id="useEnvVars" checked>
+                            Use environment variables from Claude Desktop
+                        </label>
+                        <small>When checked, configuration from Claude Desktop will be used</small>
+                    </div>
+
+                    <div id="manualConfig" class="manual-config" style="display: none;">
+                        <div class="form-group">
+                            <label for="baseUrl">Base URL:</label>
+                            <input type="url" id="baseUrl" placeholder="https://your-server.com/documents/wcc/api/v1.1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username">Username:</label>
+                            <input type="text" id="username" placeholder="your-username" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" placeholder="your-password" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit">Save Configuration</button>
+                        <button type="button" id="testConnection">Test Connection</button>
+                    </div>
+                    <small style="margin-top: 10px; display: block; color: #7f8c8d;">
+                        Test connection will verify connectivity using current form values
+                    </small>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Server Control</h2>
+                <div class="server-controls">
+                    <button id="startServer" class="btn-primary">Start Server</button>
+                    <button id="stopServer" class="btn-secondary" disabled>Stop Server</button>
+                    <span id="serverStatus" class="status">Stopped</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Server Log</h2>
+                <div id="serverLog" class="log-container">
+                    <p>Server not started</p>
+                </div>
+                <button id="clearLog" class="btn-small">Clear Log</button>
+            </div>
+
+            <div class="card">
+                <h2>Claude Desktop Configuration</h2>
+                <p>Add this to your Claude Desktop configuration file:</p>
+                <pre id="claudeConfig" class="code-block">{
+  "mcpServers": {
+    "webcenter-content": {
+      "command": "<span id="configPath">C:\\path\\to\\WebCenter Content MCP Server.exe</span>",
+      "env": {
+        "WCC_BASE_URL": "https://your-server.com/documents/wcc/api/v1.1",
+        "WCC_USER": "your-username",
+        "WCC_PASSWORD": "your-password"
+      }
+    }
+  }
+}</pre>
+                <button id="copyConfig" class="btn-small">Copy to Clipboard</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>
