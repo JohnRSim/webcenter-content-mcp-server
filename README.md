@@ -291,9 +291,6 @@ Add this to your Claude Desktop configuration (`claude_desktop_config.json`):
 }
 ```
 
-### VS Code with MCP Extension
-
-Configure the MCP extension to use this server by adding it to your MCP settings.
 
 ## API Coverage
 
