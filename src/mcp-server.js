@@ -2450,6 +2450,24 @@ EXAMPLES:
             },
           },
           {
+            name: 'delete-document',
+            description: 'Delete a document from WebCenter Content',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name (dDocName)',
+                },
+                version: {
+                  type: 'string',
+                  description: 'Document version (optional)',
+                },
+              },
+              required: ['dDocName'],
+            },
+          },
+          {
             name: 'build-search-query',
             description: `Build a properly formatted search query for WebCenter Content. Use this BEFORE calling search-documents when you need to search by metadata fields or combine text with filters.
 
@@ -2589,6 +2607,831 @@ EXAMPLES:
                   additionalProperties: true,
                 },
               },
+            },
+          },
+          {
+            name: 'upload-document-revision',
+            description: 'Upload a new revision of a document',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                filePath: {
+                  type: 'string',
+                  description: 'Path to the file to upload',
+                },
+                metadata: {
+                  type: 'object',
+                  description: 'Document metadata',
+                },
+              },
+              required: ['dDocName', 'filePath', 'metadata'],
+            },
+          },
+          {
+            name: 'download-document-by-revision-id',
+            description: 'Download document by revision ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dID: {
+                  type: 'string',
+                  description: 'Document revision ID',
+                },
+                rendition: {
+                  type: 'string',
+                  description: 'Rendition type (optional)',
+                },
+                outputPath: {
+                  type: 'string',
+                  description: 'Local path to save the downloaded file',
+                },
+              },
+              required: ['dID', 'outputPath'],
+            },
+          },
+          {
+            name: 'update-document-by-revision-id',
+            description: 'Update document by revision ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dID: {
+                  type: 'string',
+                  description: 'Document revision ID',
+                },
+                metadata: {
+                  type: 'object',
+                  description: 'Updated metadata',
+                },
+                createPrimaryMetaFile: {
+                  type: 'boolean',
+                  description: 'Create primary meta file (optional)',
+                },
+                createAlternateMetaFile: {
+                  type: 'boolean',
+                  description: 'Create alternate meta file (optional)',
+                },
+              },
+              required: ['dID', 'metadata'],
+            },
+          },
+          {
+            name: 'resubmit-conversion',
+            description: 'Resubmit failed conversion',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                version: {
+                  type: 'string',
+                  description: 'Document version (optional)',
+                },
+                alwaysResubmit: {
+                  type: 'boolean',
+                  description: 'Always resubmit flag (optional)',
+                },
+              },
+              required: ['dDocName'],
+            },
+          },
+          {
+            name: 'resubmit-conversion-by-revision-id',
+            description: 'Resubmit failed conversion by revision ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dID: {
+                  type: 'string',
+                  description: 'Document revision ID',
+                },
+              },
+              required: ['dID'],
+            },
+          },
+          {
+            name: 'update-storage-tier',
+            description: 'Change storage tier',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                storageTier: {
+                  type: 'string',
+                  description: 'Storage tier',
+                },
+                version: {
+                  type: 'string',
+                  description: 'Document version (optional)',
+                },
+              },
+              required: ['dDocName', 'storageTier'],
+            },
+          },
+          {
+            name: 'update-storage-tier-by-revision-id',
+            description: 'Change storage tier by revision ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dID: {
+                  type: 'string',
+                  description: 'Document revision ID',
+                },
+                storageTier: {
+                  type: 'string',
+                  description: 'Storage tier',
+                },
+              },
+              required: ['dID', 'storageTier'],
+            },
+          },
+          {
+            name: 'restore-from-archive',
+            description: 'Restore from archive',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                version: {
+                  type: 'string',
+                  description: 'Document version (optional)',
+                },
+                hours: {
+                  type: 'number',
+                  description: 'Hours to restore for (optional)',
+                },
+              },
+              required: ['dDocName'],
+            },
+          },
+          {
+            name: 'restore-from-archive-by-revision-id',
+            description: 'Restore from archive by revision ID',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dID: {
+                  type: 'string',
+                  description: 'Document revision ID',
+                },
+                hours: {
+                  type: 'number',
+                  description: 'Hours to restore for (optional)',
+                },
+              },
+              required: ['dID'],
+            },
+          },
+          {
+            name: 'delete-folder',
+            description: 'Delete a folder',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+              },
+              required: ['fFolderGUID'],
+            },
+          },
+          {
+            name: 'get-folder-file-info',
+            description: 'Get file info in folder',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFileGUID: {
+                  type: 'string',
+                  description: 'File GUID',
+                },
+              },
+              required: ['fFileGUID'],
+            },
+          },
+          {
+            name: 'delete-folder-file',
+            description: 'Delete file in folder',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFileGUID: {
+                  type: 'string',
+                  description: 'File GUID',
+                },
+              },
+              required: ['fFileGUID'],
+            },
+          },
+          {
+            name: 'create-file-link',
+            description: 'Create file link',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                fFileType: {
+                  type: 'string',
+                  description: 'File type (optional)',
+                },
+                ConflictResolutionMethod: {
+                  type: 'string',
+                  description: 'Conflict resolution method (optional)',
+                },
+              },
+              required: ['fFolderGUID', 'dDocName'],
+            },
+          },
+          {
+            name: 'get-folder-capabilities',
+            description: 'Test folder capabilities',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+                testedCapabilities: {
+                  type: 'string',
+                  description: 'Comma-separated list of capabilities to test',
+                },
+              },
+              required: ['fFolderGUID', 'testedCapabilities'],
+            },
+          },
+          {
+            name: 'create-public-link-for-file',
+            description: 'Create public link for file',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFileGUID: {
+                  type: 'string',
+                  description: 'File GUID',
+                },
+                publicLinkData: {
+                  type: 'object',
+                  description: 'Public link data',
+                },
+              },
+              required: ['fFileGUID', 'publicLinkData'],
+            },
+          },
+          {
+            name: 'get-public-links-for-file',
+            description: 'List public links for file',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFileGUID: {
+                  type: 'string',
+                  description: 'File GUID',
+                },
+                offset: {
+                  type: 'number',
+                  description: 'Offset for pagination (optional)',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Limit for pagination (optional)',
+                },
+              },
+              required: ['fFileGUID'],
+            },
+          },
+          {
+            name: 'create-public-link-for-folder',
+            description: 'Create public link for folder',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+                publicLinkData: {
+                  type: 'object',
+                  description: 'Public link data',
+                },
+              },
+              required: ['fFolderGUID', 'publicLinkData'],
+            },
+          },
+          {
+            name: 'get-public-links-for-folder',
+            description: 'List public links for folder',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+                offset: {
+                  type: 'number',
+                  description: 'Offset for pagination (optional)',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Limit for pagination (optional)',
+                },
+              },
+              required: ['fFolderGUID'],
+            },
+          },
+          {
+            name: 'get-public-link-info',
+            description: 'Get public link info',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dLinkID: {
+                  type: 'string',
+                  description: 'Link ID',
+                },
+              },
+              required: ['dLinkID'],
+            },
+          },
+          {
+            name: 'create-application-link',
+            description: 'Create application link',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+                applicationLinkData: {
+                  type: 'object',
+                  description: 'Application link data',
+                },
+              },
+              required: ['fFolderGUID', 'applicationLinkData'],
+            },
+          },
+          {
+            name: 'get-application-links-for-folder',
+            description: 'List application links for folder',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                fFolderGUID: {
+                  type: 'string',
+                  description: 'Folder GUID',
+                },
+                offset: {
+                  type: 'number',
+                  description: 'Offset for pagination (optional)',
+                },
+                limit: {
+                  type: 'number',
+                  description: 'Limit for pagination (optional)',
+                },
+              },
+              required: ['fFolderGUID'],
+            },
+          },
+          {
+            name: 'get-application-link-info',
+            description: 'Get application link info',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dAppLinkID: {
+                  type: 'string',
+                  description: 'Application link ID',
+                },
+              },
+              required: ['dAppLinkID'],
+            },
+          },
+          {
+            name: 'delete-application-link',
+            description: 'Delete application link',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dAppLinkID: {
+                  type: 'string',
+                  description: 'Application link ID',
+                },
+              },
+              required: ['dAppLinkID'],
+            },
+          },
+          {
+            name: 'refresh-application-link-token',
+            description: 'Refresh applink access token',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dAppLinkID: {
+                  type: 'string',
+                  description: 'Application link ID',
+                },
+                refreshData: {
+                  type: 'object',
+                  description: 'Refresh token data',
+                },
+              },
+              required: ['dAppLinkID', 'refreshData'],
+            },
+          },
+          {
+            name: 'start-bulk-delete-job',
+            description: 'Start bulk delete job',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                jobRequest: {
+                  type: 'object',
+                  description: 'Job request data',
+                },
+              },
+              required: ['jobRequest'],
+            },
+          },
+          {
+            name: 'start-bulk-download-job',
+            description: 'Start bulk download job',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                jobRequest: {
+                  type: 'object',
+                  description: 'Job request data',
+                },
+              },
+              required: ['jobRequest'],
+            },
+          },
+          {
+            name: 'start-bulk-add-category-job',
+            description: 'Start bulk add category job',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                jobRequest: {
+                  type: 'object',
+                  description: 'Job request data',
+                },
+              },
+              required: ['jobRequest'],
+            },
+          },
+          {
+            name: 'start-bulk-remove-category-job',
+            description: 'Start bulk remove category job',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                jobRequest: {
+                  type: 'object',
+                  description: 'Job request data',
+                },
+              },
+              required: ['jobRequest'],
+            },
+          },
+          {
+            name: 'cancel-background-job',
+            description: 'Cancel a background job',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dJobID: {
+                  type: 'string',
+                  description: 'Job ID',
+                },
+              },
+              required: ['dJobID'],
+            },
+          },
+          {
+            name: 'get-background-job-status',
+            description: 'Get status of a background job',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dJobID: {
+                  type: 'string',
+                  description: 'Job ID',
+                },
+              },
+              required: ['dJobID'],
+            },
+          },
+          {
+            name: 'download-background-job-package',
+            description: 'Download background job package',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dJobID: {
+                  type: 'string',
+                  description: 'Job ID',
+                },
+                outputPath: {
+                  type: 'string',
+                  description: 'Local path to save the package',
+                },
+              },
+              required: ['dJobID', 'outputPath'],
+            },
+          },
+          {
+            name: 'create-taxonomy',
+            description: 'Create a taxonomy',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                taxonomyData: {
+                  type: 'object',
+                  description: 'Taxonomy creation data',
+                },
+              },
+              required: ['taxonomyData'],
+            },
+          },
+          {
+            name: 'get-taxonomy',
+            description: 'Get a taxonomy',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dTaxonomyGUID: {
+                  type: 'string',
+                  description: 'Taxonomy GUID',
+                },
+              },
+              required: ['dTaxonomyGUID'],
+            },
+          },
+          {
+            name: 'update-taxonomy',
+            description: 'Update a taxonomy',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dTaxonomyGUID: {
+                  type: 'string',
+                  description: 'Taxonomy GUID',
+                },
+                taxonomyData: {
+                  type: 'object',
+                  description: 'Taxonomy update data',
+                },
+              },
+              required: ['dTaxonomyGUID', 'taxonomyData'],
+            },
+          },
+          {
+            name: 'get-document-types',
+            description: 'List document types',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+            },
+          },
+          {
+            name: 'get-document-config-info',
+            description: 'Get configuration info',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                rowLimit: {
+                  type: 'number',
+                  description: 'Row limit (optional)',
+                },
+                includeResultSets: {
+                  type: 'string',
+                  description: 'Include result sets (optional)',
+                },
+              },
+            },
+          },
+          {
+            name: 'get-document-meta-info',
+            description: 'Get metadata fields info',
+            inputSchema: {
+              type: 'object',
+              properties: {},
+            },
+          },
+          {
+            name: 'query-data-source',
+            description: 'Query data source',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dataSource: {
+                  type: 'string',
+                  description: 'Data source name',
+                },
+                whereClause: {
+                  type: 'string',
+                  description: 'Where clause (optional)',
+                },
+                orderClause: {
+                  type: 'string',
+                  description: 'Order clause (optional)',
+                },
+                maxRows: {
+                  type: 'number',
+                  description: 'Maximum rows (optional)',
+                },
+                startRow: {
+                  type: 'number',
+                  description: 'Start row (optional)',
+                },
+              },
+              required: ['dataSource'],
+            },
+          },
+          {
+            name: 'create-workflow',
+            description: 'Create a new workflow',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                workflowData: {
+                  type: 'object',
+                  description: 'Workflow data',
+                },
+              },
+              required: ['workflowData'],
+            },
+          },
+          {
+            name: 'get-workflow',
+            description: 'Get workflow information',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dWfName: {
+                  type: 'string',
+                  description: 'Workflow name',
+                },
+              },
+              required: ['dWfName'],
+            },
+          },
+          {
+            name: 'update-workflow',
+            description: 'Edit workflow',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dWfName: {
+                  type: 'string',
+                  description: 'Workflow name',
+                },
+                workflowData: {
+                  type: 'object',
+                  description: 'Workflow update data',
+                },
+              },
+              required: ['dWfName', 'workflowData'],
+            },
+          },
+          {
+            name: 'approve-workflow',
+            description: 'Approve workflow for document',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+              },
+              required: ['dDocName'],
+            },
+          },
+          {
+            name: 'reject-workflow',
+            description: 'Reject workflow for document',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                rejectMessage: {
+                  type: 'string',
+                  description: 'Rejection message (optional)',
+                },
+              },
+              required: ['dDocName'],
+            },
+          },
+          {
+            name: 'add-attachment',
+            description: 'Add attachment to document',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                extRenditionName: {
+                  type: 'string',
+                  description: 'External rendition name',
+                },
+                filePath: {
+                  type: 'string',
+                  description: 'Path to attachment file',
+                },
+                extRenditionDescription: {
+                  type: 'string',
+                  description: 'External rendition description (optional)',
+                },
+                version: {
+                  type: 'string',
+                  description: 'Version (optional)',
+                },
+              },
+              required: ['dDocName', 'extRenditionName', 'filePath'],
+            },
+          },
+          {
+            name: 'get-attachments',
+            description: 'List attachments for document',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+              },
+              required: ['dDocName'],
+            },
+          },
+          {
+            name: 'download-attachment',
+            description: 'Download attachment',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                extRenditionName: {
+                  type: 'string',
+                  description: 'External rendition name',
+                },
+                outputPath: {
+                  type: 'string',
+                  description: 'Local path to save the attachment',
+                },
+              },
+              required: ['dDocName', 'extRenditionName', 'outputPath'],
+            },
+          },
+          {
+            name: 'delete-attachment',
+            description: 'Delete attachment',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                dDocName: {
+                  type: 'string',
+                  description: 'Document name',
+                },
+                extRenditionName: {
+                  type: 'string',
+                  description: 'External rendition name',
+                },
+              },
+              required: ['dDocName', 'extRenditionName'],
             },
           },
         ],
