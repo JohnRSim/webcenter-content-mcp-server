@@ -27,13 +27,44 @@ This MCP server provides comprehensive tools and resources for Oracle WebCenter 
    npm install
    ```
 
-3. Configure environment variables by creating or updating the `.env` file:
+3. Env settings
+WebServer
+Configure environment variables by creating or updating the `.env` file:
    ```
    WCC_BASE_URL=https://your-webcenter-domain.com/documents/wcc/api/v1.1
    WCC_USER=your-username
    WCC_PASSWORD=your-password
    MCP_PORT=3999
    ```
+3.2 Claude desktop
+Configure configuration by updating the following file:
+For mac:
+  ```
+  open ~/Library/Application\ Support/Claude/claude_desktop_config.json
+  ```
+
+It should look something like this
+  ```
+  {
+    "mcpServers": {
+        "webcenter-content-stdio": {
+            "command": "node",
+            "args": [
+                "/pathToRepository/mcp-server-standalone.js"
+            ],
+            "env": {
+                "WCC_BASE_URL": "https://wccDomain.cec.ocp.oc-test.com/documents/wcc/api/v1.1",
+                "WCC_USER": "jsmith",
+                "WCC_PASSWORD": "MyPassword"
+            }
+        }
+    }
+}
+```
+
+Note: if you are using a mac and are using the download tool make sure to give claude full access or let claude know where to put the file.
+System Settings >> Privacy and Security >> Full disk access
+Otherwise it will only have access to documents folder and is not aware of this access restriction or where it can put files.
 
 ## Usage
 
